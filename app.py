@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 import os
 import requests
+import re
 
 app = Flask(__name__)
 
@@ -50,12 +51,18 @@ def home():
     query = request.args.get("search", "").lower()
 
     processed = []
+    seen = set()
 
     for s in subs:
         if query and query not in s.lower():
             continue
 
         name = s.rstrip("/").split("/r/")[-1]
+
+        # remove duplicates in memory too
+        if name in seen:
+            continue
+        seen.add(name)
 
         processed.append({
             "name": name,
@@ -65,25 +72,29 @@ def home():
 
     return render_template("index.html", subreddits=processed, search=query)
 
-# ---------- ADD ----------
+# ---------- ADD (FIXED MULTI-INPUT PARSER) ----------
 @app.route("/add", methods=["POST"])
 def add():
     raw = request.form["url"]
-    links = raw.split("\n")
 
-    for link in links:
-        link = link.strip()
-        if not link:
+    # 🔥 extract ALL r/subreddit anywhere in text
+    subs = re.findall(r"r/[A-Za-z0-9_]+", raw)
+
+    existing = load_subreddits()
+    existing_set = set(existing)
+
+    for sub in subs:
+        full_link = f"https://www.reddit.com/{sub}/"
+
+        # avoid duplicates in file
+        if full_link in existing_set:
             continue
 
-        # support r/example format
-        if link.startswith("r/"):
-            link = "https://www.reddit.com/" + link + "/"
-
-        save_subreddit(link)
+        save_subreddit(full_link)
+        existing_set.add(full_link)
 
     return redirect("/")
 
-# ---------- RUN (IMPORTANT FOR HOSTING) ----------
+# ---------- RUN ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
