@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subreddit Grid</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #111;
+            color: white;
+            margin: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 10px;
+            width: 320px;
+        }
+
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        a {
+            color: #4af;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .topbar {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>📊 Subreddit Grid</h1>
+
+<!-- ADD FORM -->
+<form method="POST" action="/add">
+    <input name="url" placeholder="Paste r/python or full link (multi-line supported)" required>
+    <button type="submit">Add</button>
+</form>
+
+<!-- SEARCH -->
+<div class="topbar">
+    <form method="GET">
+        <input name="search" placeholder="Search..." value="{{ search }}">
+        <button type="submit">Search</button>
+        <a href="/" style="color:#4af;margin-left:10px;">Reset</a>
+    </form>
+</div>
+
+<hr>
+
+<!-- GRID -->
+<div class="grid">
+    {% for s in subreddits %}
+    <div class="card">
+        <img src="{{ s.icon }}">
+        <div>
+            <a href="{{ s.url }}" target="_blank">
+                r/{{ s.name }}
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>
